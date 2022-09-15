@@ -1,4 +1,4 @@
-import sys;
+import sys,ipaddress
 from ipaddress import ip_address
 from termcolor import colored
 def getrange(line):
@@ -11,7 +11,6 @@ def getrange(line):
 	print(colored(end,'green'))	
 print("Welcome to Range2IP")
 if sys.argv[1] == "-f":
-	with open(sys.argv[2]) as file:
-		for line in file: getrange(line)	
-else:
-	getrange(sys.argv[1])
+	with open(sys.argv[2]) as file: 
+		for line in file: getrange(line)		
+else: getrange(sys.argv[1])
