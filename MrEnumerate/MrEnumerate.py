@@ -6,6 +6,8 @@ from urllib.parse import urldefrag, urljoin, urlparse
 import bs4
 import requests
 import argparse
+import shodan
+import time
 
 
 def crawler(startpage, maxpages=100, singledomain=True):
@@ -82,12 +84,24 @@ def commander(command, file):
 def CommonUDPports():
     os.system("nmap -sU -p 123,161,500 -script '*snmp* or ntp-monlist' -iL " + args.iL)
 
+def bbw():
+    with open(args.iL, 'r') as file:
+        for url in file:
+            with open(args.bbw, 'r') as file2:
+                for payload in file2:
+                    time.sleep(5)
+                    new = url + payload
+                    command = 'curl -I '+ new.replace('\n', '')
+                    print('command === ',command)
+                    result = os.system(str(command))
+
 parser = argparse.ArgumentParser(description='MrEnumerate Help')
 parser.add_argument('-c', help='Web Crawler',metavar='URL')
 parser.add_argument('-s', help='Port Scan with Shodan API',metavar='apikey')
 parser.add_argument('-iL', help='Provide File of Targets',metavar='file.txt')
 parser.add_argument('-k', help='Iterate Through File. Eg -k enum4linux -a -iL scope.txt',metavar='command')
 parser.add_argument('-eu', help='Nmap Scan Common External UDP Ports',action="store_const",const=True)
+parser.add_argument('-bbw', help='Bug Bounty Directory Wordlist Brute Force ',metavar='wordlist.txt')
 args = parser.parse_args()
 
 if (args.c):
@@ -105,3 +119,5 @@ if (args.k and args.iL):
 	commander(command, file)
 if (args.eu and args.iL):
     CommonUDPports()
+if (args.bbw and args.iL):
+    bbw()
