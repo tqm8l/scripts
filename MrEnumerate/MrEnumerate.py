@@ -8,9 +8,11 @@ import requests
 import argparse
 import shodan
 import time
+import termcolor
+from termcolor import colored
 
 
-def crawler(startpage, maxpages=100, singledomain=True):
+def crawler(startpage, maxpages=5, singledomain=True):
     pagequeue = collections.deque()
     pagequeue.append(startpage)
     crawled = []
@@ -73,14 +75,14 @@ def url_in_list(url, listobj):
 def searchShodan(asset, key):
 	req = requests.get("https://api.shodan.io/shodan/host/"+asset+"?key="+key+"")
 	response = req.json()
-	ports = response['ports']
-	print(asset , ports)
+    #ports = response['ports']
+    #print(response)
 
 def commander(command, file):
-	with open(file, 'r') as file:
-	 	for line in file:
-	 		os.system(command + ' ' + line)
-
+    with open(file, 'r') as file:
+        for line in file:
+            print(colored("[MrEnumerate]", 'green', attrs=['bold']),colored("Target: ", 'green'), line)
+            os.system(command + ' ' + line)
 def CommonUDPports():
     os.system("nmap -sU -p 123,161,500 -script '*snmp* or ntp-monlist' -iL " + args.iL)
 
@@ -91,22 +93,31 @@ def bbw():
                 for payload in file2:
                     time.sleep(5)
                     new = url + payload
-                    command = 'curl -I '+ new.replace('\n', '')
-                    print('command === ',command)
-                    result = os.system(str(command))
+                    print(colored("Trying paths...", 'green'))
+                    try:
+                        response = requests.get(new)
+                        response_code = response.status_code
+                        content_length = len(response.content)
+                        if status_code == 200:
+                            print(url ,response_code, content_length) 
+                    except Exception as e:
+                        continue
 
+print()
+print(colored("MrEnumerate  ", 'green',attrs=['bold']),colored("Version: 0.1", 'red'))
+print()
 parser = argparse.ArgumentParser(description='MrEnumerate Help')
 parser.add_argument('-c', help='Web Crawler',metavar='URL')
 parser.add_argument('-s', help='Port Scan with Shodan API',metavar='apikey')
 parser.add_argument('-iL', help='Provide File of Targets',metavar='file.txt')
 parser.add_argument('-k', help='Iterate Through File. Eg -k enum4linux -a -iL scope.txt',metavar='command')
 parser.add_argument('-eu', help='Nmap Scan Common External UDP Ports',action="store_const",const=True)
-parser.add_argument('-bbw', help='Bug Bounty Directory Wordlist Brute Force ',metavar='wordlist.txt')
+parser.add_argument('-bbw', help='Append Wordlist to URL',metavar='wordlist.txt')
 args = parser.parse_args()
 
 if (args.c):
 	startpage = args.c
-	crawler(startpage, maxpages=100)
+	crawler(startpage, maxpages=5)
 if (args.s and args.iL):
 	key = args.s
 	with open(args.iL, 'r') as file:
